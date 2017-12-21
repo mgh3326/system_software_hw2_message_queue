@@ -7,6 +7,8 @@
 #define MAX_MSG_SIZE (1024)
 #define MAX_QCB_SIZE (32)
 
+#define MY_IPC_RMID (100)
+
 typedef struct _Message Message;
 typedef struct _Message
 {

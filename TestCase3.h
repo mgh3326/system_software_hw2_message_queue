@@ -1,17 +1,20 @@
-#ifndef TEST_CASE3_H
-#define TEST_CASE3_H
+#ifndef TEST_CASE_3_H
+#define TEST_CASE_3_H
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 #include <assert.h>
+#include <pthread.h>
 #include <time.h>
 #include <errno.h>
-#include <signal.h>
+#include <sys/msg.h>
+
+#include "Init.h"
+#include "Scheduler.h"
 #include "Thread.h"
+#include "MsgQueue.h"
 
-#define TOTAL_THREAD_NUM (5)
-
-void *Tc3ThreadProc(void *param);
 void TestCase3(void);
-
 #endif

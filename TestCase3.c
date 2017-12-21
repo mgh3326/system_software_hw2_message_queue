@@ -1,81 +1,77 @@
 #include "TestCase3.h"
+#define MAX_TEXT 512
+struct mymsgbuf{
+		long mytype;
+		char mtext[MAX_TEXT];
 
-void *Tc3ThreadProc(void *param)
+};
+
+
+int SendInTestCase3(int inputKey)
 {
-	thread_t tid = 0;
-	int *retVal;
-	tid = thread_self();
-	while (1)
+	key_t key;
+	int msgid;
+	struct mymsgbuf mesg;
+	int count;
+	key = inputKey;
+	msgid = mymsgget(key,0);
+	if(msgid==-1)
 	{
-		sleep(2);
-		printf("Tc3ThreadProc: my thread id:(%d), arg : %d\n", (int)tid, *((int *)param));
+		perror("msgget");
+		exit(1);
 	}
-	retVal = (int *)param;
-	thread_exit(retVal);
-	return retVal;
+
+	for(count=0;count<2;count++)
+	{
+		mesg.mytype = 1;
+		strcpy(mesg.mtext,"Message Q Test");
+		if(mymsgsnd(msgid,(void*)&mesg,MAX_TEXT,0)==-1){
+			exit(1);
+		}
+	}
 }
 
-/* 
- * - TestCase3 tests suspending, resuming and deleting Threads. 
- * - Testing API scopes: thread_suspend, thread_resume, thread_cancel,thread_self
- */
+
+int ReadInTestCase3(int inputKey)
+{
+	struct mymsgbuf inmsg;
+	key_t key;
+	int msgid,len,count;
+	
+	key=inputKey;
+
+	if((msgid=mymsgget(key,0))<0) 
+	{
+		perror("msgget");
+		exit(1);
+
+	}
+	for(count =0; count<2;count++){
+		len =mymsgrcv(msgid,&inmsg,MAX_TEXT,1,0);
+		if(len==-1)
+		{
+			perror("msgrcv");
+		}
+		printf("Received Msg= %s,Len %d, Type : %d\n",inmsg.mtext,len,(int)inmsg.mytype);
+	}
+	mymsgctl(msgid,MY_IPC_RMID,0);
+}
+
+
+
 
 void TestCase3(void)
 {
-	thread_t tid[TOTAL_THREAD_NUM];
-	int i = 0;
-	int j = 0;
-	int i1 = 1, i2 = 2, i3 = 3, i4 = 4, i5 = 5;
-	signal(SIGCHLD, SIG_IGN);
+	thread_t pid[7];
+	thread_create(&pid[3],NULL,(void*)ReadInTestCase3,(void*)1234);
+	thread_create(&pid[4],NULL,(void*)ReadInTestCase3,(void*)1235);
+	thread_create(&pid[5],NULL,(void*)ReadInTestCase3,(void*)1236);
+	
+	thread_create(&pid[0],NULL,(void*)SendInTestCase3,(void*)1234);
+	thread_create(&pid[1],NULL,(void*)SendInTestCase3,(void*)1235);
+	thread_create(&pid[2],NULL,(void*)SendInTestCase3,(void*)1236);
 
-	thread_create(&tid[0], NULL, (void *)Tc3ThreadProc, (void *)&i1);
-	thread_create(&tid[1], NULL, (void *)Tc3ThreadProc, (void *)&i2);
-	thread_create(&tid[2], NULL, (void *)Tc3ThreadProc, (void *)&i3);
-	thread_create(&tid[3], NULL, (void *)Tc3ThreadProc, (void *)&i4);
-	thread_create(&tid[4], NULL, (void *)Tc3ThreadProc, (void *)&i5);
 
-	/* Suspend all thread */
-	for (i = 0; i < TOTAL_THREAD_NUM; i++)
-	{
-		sleep(2);
 
-		if (thread_suspend(tid[i]) == -1)
-		{
-			printf("TestCase3: Thread suspending Failed..\n");
-			assert(0);
-		}
 
-		Thread *temp = WaitQHead;
-
-		for (j = 0; j < i; j++)
-			temp = temp->pNext;
-
-		if (temp->status != 2)
-		{
-			printf("TestCase3: Thread is not suspended\n");
-			assert(0);
-		}
-	}
-
-	/* Resume thread sequentially */
-	for (i = 0; i < TOTAL_THREAD_NUM; i++)
-	{
-		sleep(2);
-
-		if (thread_resume(tid[i]) == -1)
-		{
-			printf("Testcase3: Thread resume Failed\n");
-			assert(0);
-		}
-	}
-
-	for (i = 0; i < TOTAL_THREAD_NUM; i++)
-	{
-		int *retVal;
-		thread_join(tid[i], (void **)&retVal);
-
-		printf("Thread [ %d ] is finish Return : [ %d ] \n", (int)tid[i], *retVal);
-	}
-
-	return;
 }

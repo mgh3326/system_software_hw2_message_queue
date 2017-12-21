@@ -1,6 +1,6 @@
-#ifndef TEST_CASE_1_H
-#define TEST_CASE_1_H
- 
+#ifndef TEST_CASE_4_H
+#define TEST_CASE_4_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -16,5 +16,5 @@
 #include "Thread.h"
 #include "MsgQueue.h"
 
-void TestCase1(void);
+void TestCase4(void);
 #endif

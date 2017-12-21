@@ -1,44 +1,102 @@
 #include "TestCase1.h"
+#define MAX_TEXT 512
 
-void *Tc1ThreadProc(void *param)
+struct mymsgbuf
 {
-    thread_t tid = 0;
-    int count = 0;
-    int *retVal;
+    long mytype;
+    char mtext[MAX_TEXT];
+};
+int mykey = 1234;
 
-    tid = thread_self();
+void ReadInTestCase1()
+{
+    int running = 1;
+    int msgid;
+    struct mymsgbuf some_data;
+    long int msg_to_receive = 1;
 
-    count = 5;
-    while (count > 0)
+    /* First, we set up the message queue. */
+
+    msgid = mymsgget(mykey, 0);
+
+    if (msgid == -1)
     {
-        /* sleep for 1 seconds */
-        sleep(2);
-        printf("Tc1ThreadProc: my thread id (%d), arg is (%d)\n", (int)tid, *((int *)param));
-        count--;
+        perror("msget err in readMsg :");
+        exit(0);
     }
-    retVal = (int *)param;
-    thread_exit(retVal);
-    return NULL;
+
+    /* Then the messages are retrieved from the queue, until an end message is encountered.
+ Lastly, the message queue is deleted. */
+
+    while (running)
+    {
+        if (mymsgrcv(msgid, (void *)&some_data, MAX_TEXT, msg_to_receive, 0) == -1)
+        {
+            perror("msgrcv error in readMsg : ");
+            exit(0);
+        }
+        printf("\nYou wrote: %s", some_data.mtext);
+        if (strncmp(some_data.mtext, "end", 3) == 0)
+        {
+            running = 0;
+        }
+    }
+
+    if (mymsgctl(msgid, MY_IPC_RMID, 0) == -1)
+    {
+        fprintf(stderr, "msgctl(IPC_RMID) failed\n");
+        exit(0);
+    }
 }
 
-/* 
- * - TestCase1 tests a round-robin scheduling of thread  
- * - Testing API scopes: thread_create
- */
-void TestCase1(void)
+void SendInTestCase1()
 {
-    thread_t tid[TOTAL_THREAD_NUM];
-    int i1 = 1, i2 = 2, i3 = 3, i4 = 4, i5 = 5;
+    int running = 1;
+    struct mymsgbuf some_data;
+    int msgid, len;
+    char buffer[MAX_TEXT];
 
-    thread_create(&tid[0], NULL, (void *)Tc1ThreadProc, (void *)&i1);
-    thread_create(&tid[1], NULL, (void *)Tc1ThreadProc, (void *)&i2);
-    thread_create(&tid[2], NULL, (void *)Tc1ThreadProc, (void *)&i3);
-    thread_create(&tid[3], NULL, (void *)Tc1ThreadProc, (void *)&i4);
-    thread_create(&tid[4], NULL, (void *)Tc1ThreadProc, (void *)&i5);
+    msgid = mymsgget(mykey, 0);
 
-    while (1)
+    if (msgid == -1)
     {
+        fprintf(stderr, "msgget failed with errord\n");
+        exit(-1);
     }
 
-    return;
+    some_data.mytype = 1;
+
+    while (running)
+    {
+        printf("Enter some text or :msg_type (type 'end' is exit)");
+        fgets(buffer, MAX_TEXT, stdin);
+        strcpy(some_data.mtext, buffer);
+        if (buffer[0] == ':')
+        {
+            printf("Change msg_type from: %d\n", (int)some_data.mytype);
+            some_data.mytype = atoi(&buffer[1]);
+            printf("    to msg_type: %d\n", (int)some_data.mytype);
+            continue;
+        }
+        len = strlen(some_data.mtext) + 1;
+        if (mymsgsnd(msgid, (void *)&some_data, len, 1) == -1)
+        {
+            fprintf(stderr, "msgsnd failed\n");
+            exit(0);
+        }
+        if (strncmp(buffer, "end", 3) == 0)
+        {
+            printf("Entering Ended\n");
+            running = 0;
+            exit(0);
+        }
+    }
+}
+
+void TestCase1(void)
+{
+    thread_t pid[2];
+
+    thread_create(&pid[0], NULL, (void *)ReadInTestCase1, 0);
+    thread_create(&pid[1], NULL, (void *)SendInTestCase1, 0);
 }
