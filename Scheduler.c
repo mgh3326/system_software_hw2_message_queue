@@ -40,6 +40,8 @@ int RunScheduler(void)
 			Ready_dequeue(); //자리를 바꿈
 
 		__ContextSwitch(ReadyQTail, ReadyQHead);
+		// printf("=======\n");
+		// print_queue();
 		//if(ReadyQTail->status==THREAD_STATUS_ZOMBIE)
 		//Ready_remove_element(ReadyQTail);
 

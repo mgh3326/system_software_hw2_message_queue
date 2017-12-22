@@ -1,6 +1,7 @@
 #include "Thread.h"
 #include "Init.h"
 #include "Scheduler.h"
+#include "MsgQueue.h"
 #include "my.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -252,7 +253,7 @@ void __thread_wait_handler(int signo)
 
 	// Ready_print_queue();
 	//     Wait_print_queue();
-
+	//printf("슈바맙\n");
 	Thread *pTh;
 	pTh->bRunnable == FALSE;
 	// __getThread()는 tid로 linked list의 TCB를 찾아서 반환한다.
@@ -552,4 +553,31 @@ Thread *Ready_peek()
 thread_t thread_head()
 {
 	return ReadyQHead->tid;
+}
+void print_queue()
+{
+
+	  Thread* p = ReadyQHead;
+	  int i=0;
+      while(p)
+    {
+	  printf("Ready(%d)tid = (%d) run = (%d) type = (%d)\n",i, p->tid,p->bRunnable,p->type);
+	  i++;
+      p = p->pNext;
+	}
+	//printf("Asdfaf\n");
+	if(qcbTblEntry[0].pQcb!=NULL)
+	{
+		//printf("Test\n");
+		Thread* q = qcbTblEntry[0].pQcb->pThreadHead;
+		i=0;
+		while(q)
+	  {
+		printf("Wait[0](%d)tid = (%d) run = (%d) type = (%d)\n",i, q->tid,q->bRunnable,q->type);
+		i++;
+		q = q->pNext;
+	  }
+	}
+	
+    
 }

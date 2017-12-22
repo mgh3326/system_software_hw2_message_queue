@@ -33,6 +33,7 @@ void __thread_wait_handler(int signo);
 void __thread_wakeup(Thread *pTh);
 Thread *Ready_peek();
 thread_t thread_head();
+void print_queue();
 //여기 까지 추가
 extern int count;
 int Ready_insert(thread_t i, void *arg);
