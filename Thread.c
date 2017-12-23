@@ -556,12 +556,14 @@ thread_t thread_head()
 }
 void print_queue()
 {
-
+	printf("=======\n");
+	
 	  Thread* p = ReadyQHead;
 	  int i=0;
       while(p)
     {
-	  printf("Ready(%d)tid = (%d) run = (%d) type = (%d)\n",i, p->tid,p->bRunnable,p->type);
+		
+	  printf("Ready(%d)tid = (%d) run = (%d) type = (%d) status = (%d)\n",i, p->tid,p->bRunnable,p->type,p->status);
 	  i++;
       p = p->pNext;
 	}
@@ -571,11 +573,25 @@ void print_queue()
 		//printf("Test\n");
 		Thread* q = qcbTblEntry[0].pQcb->pThreadHead;
 		i=0;
+		printf("-------\n");
 		while(q)
 	  {
-		printf("Wait[0](%d)tid = (%d) run = (%d) type = (%d)\n",i, q->tid,q->bRunnable,q->type);
+
+		
+		printf("Wait[0](%d)tid = (%d) run = (%d) type = (%d) status = (%d)\n",i, q->tid,q->bRunnable,q->type,q->status);
 		i++;
 		q = q->pNext;
+	  }
+	  Message* r = qcbTblEntry[0].pQcb->pMsgHead;
+	  i=0;
+	  printf("______\n");
+	  while(r)
+	  {
+
+		
+		printf("Message(%d)type = (%d)\n",i,r->type);
+		i++;
+		r = r->pNext;
 	  }
 	}
 	

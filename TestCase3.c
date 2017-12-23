@@ -9,6 +9,7 @@ struct mymsgbuf{
 
 int SendInTestCase3(int inputKey)
 {
+	//printf("test send : tid (%d) type(%d)센드 시작\n",thread_self(),inputKey);
 	key_t key;
 	int msgid;
 	struct mymsgbuf mesg;
@@ -20,7 +21,7 @@ int SendInTestCase3(int inputKey)
 		perror("msgget");
 		exit(1);
 	}
-
+	//printf("test send : tid (%d) type(%d)센드 중반\n",thread_self(),inputKey);
 	for(count=0;count<2;count++)
 	{
 		mesg.mytype = 1;
@@ -33,7 +34,7 @@ int SendInTestCase3(int inputKey)
 
 
 int ReadInTestCase3(int inputKey)
-{
+{ //printf("test read : tid (%d) type(%d)리시브 시작\n",thread_self(),inputKey);
 	struct mymsgbuf inmsg;
 	key_t key;
 	int msgid,len,count;
@@ -46,6 +47,7 @@ int ReadInTestCase3(int inputKey)
 		exit(1);
 
 	}
+	//printf("test read : tid (%d) type(%d)리시브 중반\n",thread_self(),inputKey);
 	for(count =0; count<2;count++){
 		len =mymsgrcv(msgid,&inmsg,MAX_TEXT,1,0);
 		if(len==-1)
